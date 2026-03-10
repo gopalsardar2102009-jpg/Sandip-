@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sandip Food Centre</title>
+<style>
+body{font-family:Arial;margin:0;background:#f5f5f5}
+header{background:#ff5722;color:#fff;text-align:center;padding:20px}
+.menu{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px;padding:20px}
+.card{background:#fff;border-radius:10px;padding:15px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.1)}
+.price{color:#ff5722;font-weight:bold}
+button{background:#ff5722;color:#fff;border:none;padding:8px 12px;border-radius:5px;cursor:pointer}
+#cartBtn{position:fixed;bottom:20px;right:20px;background:#000;color:#fff;padding:15px;border-radius:50px}
+#cartModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5)}
+#cartContent{background:#fff;margin:10% auto;padding:20px;width:90%;max-width:400px;border-radius:10px}
+input,textarea{width:100%;padding:8px;margin:5px 0}
+.whatsapp{position:fixed;bottom:80px;right:20px;background:#25D366;color:#fff;padding:12px 15px;border-radius:50px;text-decoration:none}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>Sandip Food Centre</h1>
+<p>Fast Food Restaurant</p>
+<p>Subbhidhipur Sardar Para, Baruipur, West Bengal 700144</p>
+</header>
+
+<div class="menu" id="menu"></div>
+
+<button id="cartBtn">Cart (<span id="count">0</span>)</button>
+
+<div id="cartModal">
+<div id="cartContent">
+<h3>Your Cart</h3>
+<div id="cartItems"></div>
+<p>Total: ₹<span id="total">0</span></p>
+
+<h4>Checkout</h4>
+<form action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
+<input type="text" name="Customer Name" placeholder="Name" required>
+<input type="tel" name="Phone" placeholder="Phone" required>
+<textarea name="Address" placeholder="Delivery Address" required></textarea>
+<textarea name="Order Details" id="orderDetails" hidden></textarea>
+<button type="submit">Send Order Email</button>
+</form>
+
+<button onclick="orderWhatsApp()">Order on WhatsApp</button>
+<button onclick="closeCart()">Close</button>
+</div>
+</div>
+
+<a class="whatsapp" href="https://wa.me/919999999999">Chat</a>
+
+<script>
+const products=[
+{name:"Chicken Lollipop",price:180},
+{name:"Chicken Fillet",price:160},
+{name:"Crispy Chicken",price:170},
+{name:"Chicken Drums of Heaven",price:200},
+{name:"Chicken Pakora",price:150},
+{name:"Fish Fry",price:150},
+{name:"Fish Finger",price:160},
+{name:"Veg Noodles",price:90},
+{name:"Egg Noodles",price:110},
+{name:"Chicken Noodles",price:130},
+{name:"Veg Fried Rice",price:100},
+{name:"Chicken Fried Rice",price:140},
+{name:"Egg Roll",price:60},
+{name:"Chicken Roll",price:80},
+{name:"Veg Momo",price:70},
+{name:"Chicken Momo",price:90}
+];
+
+let cart=JSON.parse(localStorage.getItem("cart"))||[];
+
+function renderMenu(){
+const menu=document.getElementById("menu");
+menu.innerHTML="";
+products.forEach((p,i)=>{
+menu.innerHTML+=`
+<div class="card">
+<h4>${p.name}</h4>
+<p class="price">₹${p.price}</p>
+<button onclick="addCart(${i})">Add to Cart</button>
+</div>`;
+});
+}
+renderMenu();
+
+function addCart(i){
+let item=cart.find(x=>x.name===products[i].name);
+if(item){item.qty++}
+else{cart.push({...products[i],qty:1})}
+updateCart();
+}
+
+function updateCart(){
+localStorage.setItem("cart",JSON.stringify(cart));
+document.getElementById("count").innerText=cart.reduce((a,b)=>a+b.qty,0);
+
+let html="",total=0;
+cart.forEach((c,i)=>{
+total+=c.price*c.qty;
+html+=`${c.name} x${c.qty} - ₹${c.price*c.qty}
+<button onclick="removeItem(${i})">X</button><br>`;
+});
+
+document.getElementById("cartItems").innerHTML=html;
+document.getElementById("total").innerText=total;
+document.getElementById("orderDetails").value=html+" Total ₹"+total;
+}
+updateCart();
+
+function removeItem(i){
+cart.splice(i,1);
+updateCart();
+}
+
+document.getElementById("cartBtn").onclick=()=>{
+document.getElementById("cartModal").style.display="block";
+}
+
+function closeCart(){
+document.getElementById("cartModal").style.display="none";
+}
+
+function orderWhatsApp(){
+let text="Order:%0A";
+cart.forEach(c=>{
+text+=`${c.name} x${c.qty} = ₹${c.price*c.qty}%0A`;
+});
+window.open("https://wa.me/919999999999?text="+text);
+}
+</script>
+
+</body>
+</html>
